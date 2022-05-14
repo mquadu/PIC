@@ -3,7 +3,7 @@ import time
 from tkinter import ttk
 from ttkthemes import ThemedTk
 
-serialPort = serial.Serial('COM4', baudrate=9600, timeout=1)
+serialPort = serial.Serial('COM3', baudrate=9600, timeout=1)
 
 print("connecte au port serie: " + serialPort.portstr)
 
@@ -21,16 +21,26 @@ def readFromSerial():
     data = serialPort.readline().decode("ascii")
 
     if data != "":
-        distance = int(data)
+        # if "distance" in data: 
+            
+        #     tab_distance = [int(s) for s in data.split() if s.isdigit()]
+        #     distance = int(tab_distance[0])
+        # else : 
+        #     distance = int (data)
+        distance = str(data)
+        valeur_distance = 0
+        if "distance" in distance : 
+            tab_distance = [int(s) for s in data.split() if s.isdigit()]
+            valeur_distance = int(tab_distance[0])
 
         print(distance)
 
         seuil = seuilCritique()
-        if distance < int(seuil):
-            texte = "La distance mesurée est de {} cm".format(distance)
+        if valeur_distance < int(seuil):
+            texte = f"{distance} La distance mesurée est de {valeur_distance} cm".format()
             label2.config(text=texte)
-        elif distance >= int(seuil):
-            texte = "{} cm Attention le seuil critique est atteint!".format(distance)
+        elif valeur_distance >= int(seuil):
+            texte = f"{distance} : {valeur_distance} cm Attention le seuil critique est atteint!".format(valeur_distance)
             label2.config(text=texte)
 
     window.after(50, readFromSerial)
