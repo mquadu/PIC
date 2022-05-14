@@ -1,26 +1,18 @@
 #include "C:\Users\cardi\Bureau\Code_3\code_with_interrupt.h"
-//#include <lcd.c>
+
 char buffer[4];
 int i = 0;
 int16 diz, unit;
 boolean flag = 0;
-int16 limitDist = 100;
-int16 dist ;
-
+int16 maxDist = 100;
+int16 dist, time  ;
 int d, c,u;
+
 #INT_TIMER1
-//int stop_timer = 0;
-//int timer_overflow = 0;
 void  TIMER1_isr(void) 
 {
    set_timer1(0);
-   //if (stop_timer){
-     // stop_timer = 0;
-      
-   //}else{
-     // set_timer1(0);
-    //  timer_overflow ++;
-   //}
+
 
 }
 #int_RDA
@@ -64,56 +56,47 @@ void main()
       delay_us(20);
       output_low(pin_c1);
       
-      //while(!input(pin_c0)){} //attendre l'etat haut de la pin echo
+      while(!input(pin_c0)){} //attendre l'etat haut de la pin echo
       
       set_timer1(0);
       
-      //while(input(pin_c0)){} //attendre l'etat haut de la pin echo    
-                         
-      dist = get_timer1()*0.028;  
+      while(input(pin_c0)){} //attendre l'etat haut de la pin echo
+      time = get_timer1();               
+      dist = time*0.028;  
       printf("distance : %ld \n" , dist);
       printf("\n");
       delay_ms(100);
     
-      if(dist<limitDist){
+      if(dist<maxDist){
          output_high(PIN_E0);
          output_low(PIN_E1);
-         printf("A1_OFF\n");
       }else{
          output_low(PIN_E0);
          output_toggle(PIN_E1);
-         printf("A1_ON\n");   //tel python application not alarm
       }
       
-      //affichage
       if(dist<100){
-         output_low(PIN_E2);
-         diz = dist/10;
-         unit = dist - (diz*10);
-         //output_b(diz+unit);
+         output_high(pin_e2);
+         unit = dist%10;
+         diz =((dist - unit)/10)%100;
          output_b((diz<<4)+unit);
       }else{
-         output_high(PIN_E2);
+         output_low(PIN_E2);
          diz = dist/100;
          unit = (dist - (diz*100))/10;
-         
-         printf(" Unité : %ld\n ", unit);
          output_b((diz<<4)+unit);
          
         
       }
       
-      //A envoyer vers le lcd
       if(flag == 1){
          flag =0;
          c = buffer[1]-48;
          d = buffer[2]-48;
          u = buffer[3]-48;
-         limitDist = (int16)(c*100+d*10+u);
+         maxDist = (int16)(c*100+d*10+u);
+         
       }
-      c =  limitDist/100;
-      d = (limitDist-(c*100))/10;
-      u = (limitDist-(c*100))-(d*10);
       delay_ms(300);
      }
 
